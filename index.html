@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rzgr1ks Key System</title>
+    <style>
+        body { background-color: #0c0c0c; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { text-align: center; background: #151515; padding: 30px; border-radius: 15px; border: 1px solid #00aaff; box-shadow: 0 0 15px #00aaff; }
+        h2 { color: #00aaff; }
+        button { background: #00aaff; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .key-box { margin-top: 20px; padding: 10px; background: #222; border: 1px dashed #555; display: none; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>rzgr1ks Scripts</h2>
+        <div id="step1">
+            <button onclick="getKey()">SUBSCRIBE TO GET KEY</button>
+        </div>
+        <div id="step2" style="display:none;">
+            <p>Your Key:</p>
+            <div id="keyDisplay" class="key-box"></div>
+            <p style="font-size: 10px; color: #666;">Copy this key to the script</p>
+        </div>
+    </div>
+
+    <script>
+        // Rastgele üretilmiş 32 karakterlik anahtar listesi (Örnek)
+        const keys = [
+            "RZGR-8J2K-9L3M-PQ1R-7V5W-4X9N-B2Z1",
+            "RZGR-Y7T5-C4E2-W9Q1-M0N8-V3X6-Z4P2",
+            "RZGR-K9L2-M5N3-B8V1-X4C7-Z0P6-Q9W4",
+            "RZGR-H6F4-S2D1-A9S8-D7F6-G5H4-J3K2"
+        ];
+
+        function getKey() {
+            window.open("https://youtube.com/@mordeusbs", "_blank");
+            setTimeout(() => {
+                document.getElementById("step1").style.display = "none";
+                document.getElementById("step2").style.display = "block";
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                document.getElementById("keyDisplay").innerText = randomKey;
+                document.getElementById("keyDisplay").style.display = "block";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
