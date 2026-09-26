@@ -1,0 +1,2189 @@
+-- Services
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local CoreGui = game:GetService("CoreGui")
+local SoundService = game:GetService("SoundService")
+local ScriptContext = game:GetService("ScriptContext")
+local LogService = game:GetService("LogService")
+local RunService = game:GetService("RunService")
+
+-- =============================================================================
+-- [ ULTRA ANTI-LOGGER, ANTI-ENVY & FAKE UI SPAMMER SYSTEM ]
+-- =============================================================================
+
+print("[Anti-Logger System] Başlatılıyor...")
+
+-- 1. Dosya Yazma / Log Kaydetme Engelleme Hooks
+if writefile then
+    local old_write = writefile
+    writefile = newcclosure(function(file, data)
+        if file == "logged.txt" or tostring(file):find("%.txt$") or tostring(file):lower():find("log") then
+            return -- Logger'ın dosya yazma isteklerini yut
+        end
+        return old_write(file, data)
+    end)
+end
+
+if appendfile then
+    local old_append = appendfile
+    appendfile = newcclosure(function(file, data)
+        if file == "logged.txt" or tostring(file):find("%.txt$") or tostring(file):lower():find("log") then
+            return -- Log kaydını engelle
+        end
+        return old_append(file, data)
+    end)
+end
+
+-- Debug Traceback Bypass
+if debug and debug.traceback then
+    local oldTraceback = debug.traceback
+    if hookfunction then
+        hookfunction(debug.traceback, function(...)
+            return "windui_rayfield_fluent_interface_bypass"
+        end)
+    end
+end
+
+-- 2. Metatable Hooking (Envy & Remote Logger Bypass)
+local rawget, rawset, getrawmetatable, setreadonly = rawget, rawset, getrawmetatable, setreadonly
+if getrawmetatable and setreadonly then
+    local gmt = getrawmetatable(game)
+    setreadonly(gmt, false)
+    local oldNamecall = gmt.__namecall
+
+    gmt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        -- Metatable seviyesinde log ve anti-cheat sinyallerini filtrele
+        if method == "FireServer" or method == "InvokeServer" then
+            local name = tostring(self)
+            if name:lower():find("log") or name:lower():find("envy") or name:lower():find("ban") or name:lower():find("cheat") then
+                return nil
+            end
+        end
+        return oldNamecall(self, ...)
+    end)
+    setreadonly(gmt, true)
+end
+
+-- 3. LogService & ScriptContext Event Suppressor
+if LogService then
+    pcall(function()
+        LogService.MessageOut:Connect(function(msg, messageType)
+            msg = nil
+        end)
+    end)
+end
+
+if ScriptContext then
+    pcall(function()
+        ScriptContext.Error:Connect(function(message, stackTrace, script)
+            message, stackTrace, script = nil, nil, nil
+        end)
+    end)
+end
+
+-- 4. Dynamic Obfuscation & Fake UI Flood Engine (Logger Crash/Overload System)
+local function generateObfuscatedName()
+    local str = ""
+    for i = 1, math.random(40, 80) do
+        str = str .. string.char(math.random(33, 126))
+    end
+    return str
+end
+
+-- Logger limitini doldurmak ve namecall/index algılayıcılarını doyurmak için sahte UI oluşturucu
+task.spawn(function()
+    while true do
+        RunService.RenderStepped:Wait()
+        for i = 1, 25 do
+            local fakeGui = Instance.new("ScreenGui")
+            fakeGui.Name = "FakeUI_" .. tostring(math.random(100000, 999999))
+            
+            local fakeFrame = Instance.new("Frame")
+            fakeFrame.Size = UDim2.new(0, math.random(10, 500), 0, math.random(10, 500))
+            fakeFrame.Position = UDim2.new(0, math.random(0, 1000), 0, math.random(0, 1000))
+            fakeFrame.Parent = fakeGui
+            
+            local fakeLabel = Instance.new("TextLabel")
+            fakeLabel.Text = "Anti-Logger Active - Obfuscating Stream " .. tostring(i)
+            fakeLabel.Parent = fakeFrame
+
+            -- Sahte çağrılarla algılayıcıları doyurma
+            local _ = fakeGui.AbsoluteSize
+            local _ = fakeFrame.AbsolutePosition
+            fakeGui:FindFirstChild("NonExistentChild")
+            
+            fakeGui:Destroy()
+        end
+    end
+end)
+
+-- Bellek adresi yanıltıcı arka plan kanalı
+task.spawn(function()
+    while task.wait(1.5) do
+        pcall(function()
+            local dummy = Instance.new("Configuration")
+            dummy.Name = generateObfuscatedName()
+            dummy.Parent = CoreGui
+            task.delay(0.5, function()
+                dummy:Destroy()
+            end)
+        end)
+    end
+end)
+
+print("[Anti-Logger System] Engellemeler ve Fake UI Flood aktif edildi!")
+
+-- Eski GUI temizliği
+if CoreGui:FindFirstChild("AnomalyHub_MainSystem") then
+    CoreGui.AnomalyHub_MainSystem:Destroy()
+end
+
+local getasset = getcustomasset or getcustomassetpath or (syn and syn.getcustomasset)
+
+-- ScreenGui Yapılandırması
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = generateObfuscatedName()
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = CoreGui
+end
+
+local isIntroEnded = false
+
+-- =============================================================================
+-- [ ULTRA CINEMATIC INTRO EKRANI ]
+-- =============================================================================
+
+local IntroFrame = Instance.new("Frame")
+IntroFrame.Name = generateObfuscatedName()
+IntroFrame.Size = UDim2.new(1, 0, 1, 0)
+IntroFrame.Position = UDim2.new(0, 0, 0, 0)
+IntroFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+IntroFrame.BackgroundTransparency = 0.12
+IntroFrame.BorderSizePixel = 0
+IntroFrame.ClipsDescendants = true
+IntroFrame.ZIndex = 100
+IntroFrame.Parent = ScreenGui
+
+-- Vinyet Işık Çerçevesi
+local Vignette = Instance.new("Frame")
+Vignette.Size = UDim2.new(1, 0, 1, 0)
+Vignette.BackgroundTransparency = 1
+Vignette.ZIndex = 101
+Vignette.Parent = IntroFrame
+
+local VignetteStroke = Instance.new("UIStroke")
+VignetteStroke.Color = Color3.fromRGB(160, 0, 255)
+VignetteStroke.Thickness = 14
+VignetteStroke.Transparency = 0.25
+VignetteStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+VignetteStroke.Parent = Vignette
+
+-- ARKA PLAN YÜZEN NEON KARTLAR
+local CardsContainer = Instance.new("Frame")
+CardsContainer.Size = UDim2.new(1, 0, 1, 0)
+CardsContainer.BackgroundTransparency = 1
+CardsContainer.ZIndex = 102
+CardsContainer.Parent = IntroFrame
+
+local bgCards = {}
+local cardDataConfig = {
+    {pos = UDim2.new(0.08, 0, 0.18, 0), symbol = "♠", color = Color3.fromRGB(180, 50, 255)},
+    {pos = UDim2.new(0.78, 0, 0.15, 0), symbol = "♥", color = Color3.fromRGB(255, 50, 150)},
+    {pos = UDim2.new(0.06, 0, 0.62, 0), symbol = "♦", color = Color3.fromRGB(0, 200, 255)},
+    {pos = UDim2.new(0.80, 0, 0.65, 0), symbol = "♣", color = Color3.fromRGB(150, 255, 50)}
+}
+
+for i, cfg in ipairs(cardDataConfig) do
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(0, 130, 0, 170)
+    card.Position = cfg.pos
+    card.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+    card.BackgroundTransparency = 0.35
+    card.Rotation = math.random(-15, 15)
+    card.ZIndex = 102
+    card.Parent = CardsContainer
+
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 12)
+    cardCorner.Parent = card
+
+    local cardStroke = Instance.new("UIStroke")
+    cardStroke.Color = cfg.color
+    cardStroke.Thickness = 2
+    cardStroke.Transparency = 0.3
+    cardStroke.Parent = card
+
+    local symbolCenter = Instance.new("TextLabel")
+    symbolCenter.Size = UDim2.new(1, 0, 1, 0)
+    symbolCenter.BackgroundTransparency = 1
+    symbolCenter.Text = cfg.symbol
+    symbolCenter.TextColor3 = cfg.color
+    symbolCenter.TextSize = 56
+    symbolCenter.Font = Enum.Font.GothamBold
+    symbolCenter.ZIndex = 103
+    symbolCenter.Parent = card
+
+    local symTopLeft = Instance.new("TextLabel")
+    symTopLeft.Size = UDim2.new(0, 24, 0, 24)
+    symTopLeft.Position = UDim2.new(0, 6, 0, 6)
+    symTopLeft.BackgroundTransparency = 1
+    symTopLeft.Text = cfg.symbol
+    symTopLeft.TextColor3 = cfg.color
+    symTopLeft.TextSize = 18
+    symTopLeft.Font = Enum.Font.GothamBold
+    symTopLeft.ZIndex = 103
+    symTopLeft.Parent = card
+
+    table.insert(bgCards, {frame = card, stroke = cardStroke, baseRot = card.Rotation, baseSize = card.Size})
+end
+
+-- İÇ İÇE GEOMETRİK HALKALAR
+local ShapesContainer = Instance.new("Frame")
+ShapesContainer.Size = UDim2.new(1, 0, 1, 0)
+ShapesContainer.BackgroundTransparency = 1
+ShapesContainer.ZIndex = 102
+ShapesContainer.Parent = IntroFrame
+
+local OuterRing = Instance.new("Frame")
+OuterRing.Size = UDim2.new(0, 360, 0, 360)
+OuterRing.Position = UDim2.new(0.5, -180, 0.5, -180)
+OuterRing.BackgroundTransparency = 1
+OuterRing.ZIndex = 103
+OuterRing.Parent = ShapesContainer
+
+local OuterRingStroke = Instance.new("UIStroke")
+OuterRingStroke.Color = Color3.fromRGB(190, 0, 255)
+OuterRingStroke.Thickness = 3
+OuterRingStroke.Transparency = 0.2
+OuterRingStroke.Parent = OuterRing
+
+local OuterRingCorner = Instance.new("UICorner")
+OuterRingCorner.CornerRadius = UDim.new(1, 0)
+OuterRingCorner.Parent = OuterRing
+
+local InnerRing = Instance.new("Frame")
+InnerRing.Size = UDim2.new(0, 260, 0, 260)
+InnerRing.Position = UDim2.new(0.5, -130, 0.5, -130)
+InnerRing.BackgroundTransparency = 1
+InnerRing.ZIndex = 103
+InnerRing.Parent = ShapesContainer
+
+local InnerRingStroke = Instance.new("UIStroke")
+InnerRingStroke.Color = Color3.fromRGB(0, 220, 255)
+InnerRingStroke.Thickness = 2
+InnerRingStroke.Transparency = 0.3
+InnerRingStroke.Parent = InnerRing
+
+local InnerRingCorner = Instance.new("UICorner")
+InnerRingCorner.CornerRadius = UDim.new(1, 0)
+InnerRingCorner.Parent = InnerRing
+
+-- SABİT ANOMALY HUB YAZISI
+local TextContainer = Instance.new("Frame")
+TextContainer.Size = UDim2.new(0, 600, 0, 160)
+TextContainer.Position = UDim2.new(0.5, -300, 0.5, -80)
+TextContainer.BackgroundTransparency = 1
+TextContainer.ZIndex = 105
+TextContainer.Parent = IntroFrame
+
+local topText = "ANOMALY"
+local topLetterLabels = {}
+local topTotal = #topText
+
+local TopRowFrame = Instance.new("Frame")
+TopRowFrame.Size = UDim2.new(1, 0, 0.5, 0)
+TopRowFrame.Position = UDim2.new(0, 0, 0, 0)
+TopRowFrame.BackgroundTransparency = 1
+TopRowFrame.Parent = TextContainer
+
+for i = 1, topTotal do
+    local char = topText:sub(i, i)
+    local letterLabel = Instance.new("TextLabel")
+    letterLabel.Size = UDim2.new(1 / topTotal, 0, 1, 0)
+    letterLabel.Position = UDim2.new((i - 1) / topTotal, 0, 0, 0)
+    letterLabel.BackgroundTransparency = 1
+    letterLabel.Text = char
+    letterLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    letterLabel.Font = Enum.Font.GothamBlack
+    letterLabel.TextSize = 48
+    letterLabel.TextTransparency = 1
+    letterLabel.ZIndex = 106
+    letterLabel.Parent = TopRowFrame
+
+    local lStroke = Instance.new("UIStroke")
+    lStroke.Color = Color3.fromRGB(180, 0, 255)
+    lStroke.Thickness = 2
+    lStroke.Transparency = 1
+    lStroke.Parent = letterLabel
+
+    table.insert(topLetterLabels, {label = letterLabel, stroke = lStroke})
+end
+
+local bottomText = "HUB"
+local bottomLetterLabels = {}
+local bottomTotal = #bottomText
+
+local BottomRowFrame = Instance.new("Frame")
+BottomRowFrame.Size = UDim2.new(0, 220, 0.5, 0)
+BottomRowFrame.Position = UDim2.new(0.5, -110, 0.5, 0)
+BottomRowFrame.BackgroundTransparency = 1
+BottomRowFrame.Parent = TextContainer
+
+for i = 1, bottomTotal do
+    local char = bottomText:sub(i, i)
+    local letterLabel = Instance.new("TextLabel")
+    letterLabel.Size = UDim2.new(1 / bottomTotal, 0, 1, 0)
+    letterLabel.Position = UDim2.new((i - 1) / bottomTotal, 0, 0, 0)
+    letterLabel.BackgroundTransparency = 1
+    letterLabel.Text = char
+    letterLabel.TextColor3 = Color3.fromRGB(0, 230, 255)
+    letterLabel.Font = Enum.Font.GothamBlack
+    letterLabel.TextSize = 42
+    letterLabel.TextTransparency = 1
+    letterLabel.ZIndex = 106
+    letterLabel.Parent = BottomRowFrame
+
+    local lStroke = Instance.new("UIStroke")
+    lStroke.Color = Color3.fromRGB(0, 150, 255)
+    lStroke.Thickness = 2
+    lStroke.Transparency = 1
+    lStroke.Parent = letterLabel
+
+    table.insert(bottomLetterLabels, {label = letterLabel, stroke = lStroke})
+end
+
+-- SKIP BUTTON
+local SkipButton = Instance.new("TextButton")
+SkipButton.Name = generateObfuscatedName()
+SkipButton.Size = UDim2.new(0, 130, 0, 40)
+SkipButton.Position = UDim2.new(1, -150, 0, 40)
+SkipButton.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+SkipButton.BackgroundTransparency = 0.2
+SkipButton.Text = "Skip Intro >"
+SkipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SkipButton.Font = Enum.Font.GothamBold
+SkipButton.TextSize = 13
+SkipButton.ZIndex = 110
+SkipButton.Parent = IntroFrame
+
+local SkipCorner = Instance.new("UICorner")
+SkipCorner.CornerRadius = UDim.new(0, 8)
+SkipCorner.Parent = SkipButton
+
+local SkipStroke = Instance.new("UIStroke")
+SkipStroke.Color = Color3.fromRGB(170, 0, 255)
+SkipStroke.Thickness = 1.5
+SkipStroke.Parent = SkipButton
+
+-- SES SİSTEMİ
+local IntroSound = Instance.new("Sound")
+IntroSound.Volume = 1.0
+IntroSound.Parent = SoundService
+
+task.spawn(function()
+    local soundUrl = "https://files.catbox.moe/jkbi33.mp3"
+    local fileName = "anomaly_intro_sound.mp3"
+    
+    if readfile and isfile and isfile(fileName) then
+        if getasset then
+            IntroSound.SoundId = getasset(fileName)
+            IntroSound:Play()
+            return
+        end
+    end
+
+    local downloadSuccess, soundData = pcall(function()
+        return game:HttpGet(soundUrl)
+    end)
+    
+    if downloadSuccess and soundData then
+        if writefile then writefile(fileName, soundData) end
+        if getasset then
+            IntroSound.SoundId = getasset(fileName)
+            IntroSound:Play()
+        end
+    end
+end)
+
+local function triggerShockwave()
+    local wave = Instance.new("Frame")
+    wave.Size = UDim2.new(0, 40, 0, 40)
+    wave.Position = UDim2.new(0.5, -20, 0.5, -20)
+    wave.BackgroundTransparency = 1
+    wave.ZIndex = 104
+    wave.Parent = IntroFrame
+
+    local wCorner = Instance.new("UICorner")
+    wCorner.CornerRadius = UDim.new(1, 0)
+    wCorner.Parent = wave
+
+    local wStroke = Instance.new("UIStroke")
+    wStroke.Color = Color3.fromRGB(220, 100, 255)
+    wStroke.Thickness = 3
+    wStroke.Parent = wave
+
+    TweenService:Create(wave, TweenInfo.new(1.0, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 900, 0, 900),
+        Position = UDim2.new(0.5, -450, 0.5, -450)
+    }):Play()
+
+    TweenService:Create(wStroke, TweenInfo.new(1.0, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Transparency = 1
+    }):Play()
+
+    game:GetService("Debris"):AddItem(wave, 1.1)
+end
+
+-- =============================================================================
+-- [ ANA GUI & SEKMELER ]
+-- =============================================================================
+
+local bgAssetId = 102444996945648
+local oldAssetId = 134282629059418
+
+local OuterFrame_View = Instance.new("Frame")
+OuterFrame_View.Name = generateObfuscatedName()
+OuterFrame_View.Size = UDim2.new(0, 230, 0, 360)
+OuterFrame_View.Position = UDim2.new(0.85, -230, 0.5, -180)
+OuterFrame_View.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+OuterFrame_View.Active = true
+OuterFrame_View.Visible = false
+OuterFrame_View.ClipsDescendants = true
+OuterFrame_View.Parent = ScreenGui
+
+local OuterCorner_View = Instance.new("UICorner")
+OuterCorner_View.CornerRadius = UDim.new(0, 14)
+OuterCorner_View.Parent = OuterFrame_View
+
+local UIGradient_View = Instance.new("UIGradient")
+UIGradient_View.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(130, 0, 255)),
+    ColorSequenceKeypoint.new(0.40, Color3.fromRGB(130, 0, 255)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(0.60, Color3.fromRGB(200, 100, 255)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(130, 0, 255))
+})
+UIGradient_View.Parent = OuterFrame_View
+
+local MainFrame_View = Instance.new("Frame")
+MainFrame_View.Name = generateObfuscatedName()
+MainFrame_View.Size = UDim2.new(1, -6, 1, -6)
+MainFrame_View.Position = UDim2.new(0, 3, 0, 3)
+MainFrame_View.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame_View.ClipsDescendants = true 
+MainFrame_View.Parent = OuterFrame_View
+
+local MainCorner_View = Instance.new("UICorner")
+MainCorner_View.CornerRadius = UDim.new(0, 12)
+MainCorner_View.Parent = MainFrame_View
+
+local BgImageLabel = Instance.new("ImageLabel")
+BgImageLabel.Name = "BgImage"
+BgImageLabel.Size = UDim2.new(1, 0, 1, 0)
+BgImageLabel.Position = UDim2.new(0, 0, 0, 0)
+BgImageLabel.BackgroundTransparency = 1
+BgImageLabel.ScaleType = Enum.ScaleType.Crop
+BgImageLabel.ZIndex = 1
+BgImageLabel.Parent = MainFrame_View
+
+local BgImageCorner = Instance.new("UICorner")
+BgImageCorner.CornerRadius = UDim.new(0, 12)
+BgImageCorner.Parent = BgImageLabel
+
+local OldImageLabel = Instance.new("ImageLabel")
+OldImageLabel.Name = "OverlayOldImage"
+OldImageLabel.Size = UDim2.new(1, 0, 0.25, 0)
+OldImageLabel.Position = UDim2.new(0, 0, 0, -10)
+OldImageLabel.BackgroundTransparency = 1
+OldImageLabel.ScaleType = Enum.ScaleType.Fit
+OldImageLabel.ZIndex = 2
+OldImageLabel.Parent = MainFrame_View
+
+local OldImageCorner = Instance.new("UICorner")
+OldImageCorner.CornerRadius = UDim.new(0, 12)
+OldImageCorner.Parent = OldImageLabel
+
+local TabsContainer = Instance.new("Frame")
+TabsContainer.Name = generateObfuscatedName()
+TabsContainer.Size = UDim2.new(1, -12, 0, 24)
+TabsContainer.Position = UDim2.new(0, 6, 0.32, -46)
+TabsContainer.BackgroundTransparency = 1
+TabsContainer.ZIndex = 5
+TabsContainer.Parent = MainFrame_View
+
+local UIListLayout_Tabs = Instance.new("UIListLayout")
+UIListLayout_Tabs.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout_Tabs.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout_Tabs.VerticalAlignment = Enum.VerticalAlignment.Center
+UIListLayout_Tabs.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout_Tabs.Padding = UDim.new(0, 3)
+UIListLayout_Tabs.Parent = TabsContainer
+
+-- CONTENT ALANI
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Name = generateObfuscatedName()
+ContentContainer.Size = UDim2.new(1, -12, 0.68, -10)
+ContentContainer.Position = UDim2.new(0, 6, 0.32, -18)
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.ZIndex = 5
+ContentContainer.ClipsDescendants = true
+ContentContainer.Parent = MainFrame_View
+
+local tabFrames = {}
+
+-- MOVEMENT TAB
+local MovementTabFrame = Instance.new("ScrollingFrame")
+MovementTabFrame.Name = generateObfuscatedName()
+MovementTabFrame.Size = UDim2.new(1, 0, 1, 0)
+MovementTabFrame.BackgroundTransparency = 1
+MovementTabFrame.Visible = true
+MovementTabFrame.ZIndex = 6
+MovementTabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+MovementTabFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+MovementTabFrame.ScrollBarThickness = 0
+MovementTabFrame.Parent = ContentContainer
+tabFrames["Movement"] = MovementTabFrame
+
+local MovementListLayout = Instance.new("UIListLayout")
+MovementListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+MovementListLayout.Padding = UDim.new(0, 3)
+MovementListLayout.Parent = MovementTabFrame
+
+-- KART OLUŞTURMA YARDIMCI FONKSİYONLARI
+local function createOptionCard(layoutOrder, labelText, defaultText, parentFrame)
+    parentFrame = parentFrame or MovementTabFrame
+    
+    local Card = Instance.new("Frame")
+    Card.Name = generateObfuscatedName()
+    Card.Size = UDim2.new(1, -4, 0, 24)
+    Card.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    Card.BackgroundTransparency = 0.25
+    Card.ZIndex = 7
+    Card.LayoutOrder = layoutOrder
+    Card.Parent = parentFrame
+
+    local CardCorner = Instance.new("UICorner")
+    CardCorner.CornerRadius = UDim.new(0, 6)
+    CardCorner.Parent = Card
+
+    local CardStroke = Instance.new("UIStroke")
+    CardStroke.Color = Color3.fromRGB(50, 40, 75)
+    CardStroke.Thickness = 1.5
+    CardStroke.Transparency = 0.2
+    CardStroke.Parent = Card
+
+    local TextLbl = Instance.new("TextLabel")
+    TextLbl.Name = "Label"
+    TextLbl.Size = UDim2.new(0.65, -10, 1, 0)
+    TextLbl.Position = UDim2.new(0, 8, 0, 0)
+    TextLbl.BackgroundTransparency = 1
+    TextLbl.Text = labelText
+    TextLbl.TextColor3 = Color3.fromRGB(240, 240, 255)
+    TextLbl.Font = Enum.Font.GothamBold
+    TextLbl.TextSize = 8.5
+    TextLbl.TextXAlignment = Enum.TextXAlignment.Left
+    TextLbl.ZIndex = 8
+    TextLbl.Parent = Card
+
+    local TxtBox = Instance.new("TextBox")
+    TxtBox.Name = "TextBox"
+    TxtBox.Size = UDim2.new(0, 44, 0, 16)
+    TxtBox.Position = UDim2.new(1, -50, 0.5, -8)
+    TxtBox.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+    TxtBox.BackgroundTransparency = 0.3
+    TxtBox.Text = defaultText
+    TxtBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TxtBox.Font = Enum.Font.GothamBold
+    TxtBox.TextSize = 9.5
+    TxtBox.ZIndex = 8
+    TxtBox.Parent = Card
+
+    local BoxCorner = Instance.new("UICorner")
+    BoxCorner.CornerRadius = UDim.new(0, 4)
+    BoxCorner.Parent = TxtBox
+
+    local BoxStroke = Instance.new("UIStroke")
+    BoxStroke.Color = Color3.fromRGB(140, 30, 255)
+    BoxStroke.Thickness = 1
+    BoxStroke.Transparency = 0.4
+    BoxStroke.Parent = TxtBox
+
+    return Card, TxtBox
+end
+
+local function createToggleCard(layoutOrder, labelText, parentFrame)
+    parentFrame = parentFrame or MovementTabFrame
+    
+    local Card = Instance.new("Frame")
+    Card.Name = generateObfuscatedName()
+    Card.Size = UDim2.new(1, -4, 0, 24)
+    Card.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    Card.BackgroundTransparency = 0.25
+    Card.ZIndex = 7
+    Card.LayoutOrder = layoutOrder
+    Card.Parent = parentFrame
+
+    local CardCorner = Instance.new("UICorner")
+    CardCorner.CornerRadius = UDim.new(0, 6)
+    CardCorner.Parent = Card
+
+    local CardStroke = Instance.new("UIStroke")
+    CardStroke.Color = Color3.fromRGB(50, 40, 75)
+    CardStroke.Thickness = 1.5
+    CardStroke.Transparency = 0.2
+    CardStroke.Parent = Card
+
+    local TextLbl = Instance.new("TextLabel")
+    TextLbl.Name = "Label"
+    TextLbl.Size = UDim2.new(0.70, -6, 1, 0)
+    TextLbl.Position = UDim2.new(0, 8, 0, 0)
+    TextLbl.BackgroundTransparency = 1
+    TextLbl.Text = labelText
+    TextLbl.TextColor3 = Color3.fromRGB(240, 240, 255)
+    TextLbl.Font = Enum.Font.GothamBold
+    TextLbl.TextSize = 8.5
+    TextLbl.TextXAlignment = Enum.TextXAlignment.Left
+    TextLbl.ZIndex = 8
+    TextLbl.Parent = Card
+
+    local ToggleFrame = Instance.new("TextButton")
+    ToggleFrame.Name = "ToggleSwitch"
+    ToggleFrame.Size = UDim2.new(0, 34, 0, 16)
+    ToggleFrame.Position = UDim2.new(1, -40, 0.5, -8)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    ToggleFrame.Text = ""
+    ToggleFrame.AutoButtonColor = false
+    ToggleFrame.ZIndex = 8
+    ToggleFrame.Parent = Card
+
+    local ToggleFrameCorner = Instance.new("UICorner")
+    ToggleFrameCorner.CornerRadius = UDim.new(1, 0)
+    ToggleFrameCorner.Parent = ToggleFrame
+
+    local ToggleFrameStroke = Instance.new("UIStroke")
+    ToggleFrameStroke.Color = Color3.fromRGB(80, 80, 100)
+    ToggleFrameStroke.Thickness = 1
+    ToggleFrameStroke.Parent = ToggleFrame
+
+    local ToggleCircle = Instance.new("Frame")
+    ToggleCircle.Name = "Circle"
+    ToggleCircle.Size = UDim2.new(0, 12, 0, 12)
+    ToggleCircle.Position = UDim2.new(0, 2, 0.5, -6)
+    ToggleCircle.BackgroundColor3 = Color3.fromRGB(180, 180, 190)
+    ToggleCircle.ZIndex = 9
+    ToggleCircle.Parent = ToggleFrame
+
+    local ToggleCircleCorner = Instance.new("UICorner")
+    ToggleCircleCorner.CornerRadius = UDim.new(1, 0)
+    ToggleCircleCorner.Parent = ToggleCircle
+
+    local isOn = false
+    ToggleFrame.MouseButton1Click:Connect(function()
+        isOn = not isOn
+        if isOn then
+            TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = UDim2.new(1, -14, 0.5, -6), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255)}):Play()
+            TweenService:Create(ToggleFrameStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(200, 100, 255)}):Play()
+        else
+            TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0.5, -6), BackgroundColor3 = Color3.fromRGB(180, 180, 190)}):Play()
+            TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+            ToggleFrameStroke.Color = Color3.fromRGB(80, 80, 100)
+        end
+    end)
+
+    return Card, ToggleFrame
+end
+
+local function createDropdownCard(layoutOrder, labelText, options, parentFrame)
+    parentFrame = parentFrame or MovementTabFrame
+    
+    local DropdownContainer = Instance.new("Frame")
+    DropdownContainer.Name = generateObfuscatedName()
+    DropdownContainer.Size = UDim2.new(1, -4, 0, 24)
+    DropdownContainer.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    DropdownContainer.BackgroundTransparency = 0.25
+    DropdownContainer.ClipsDescendants = true
+    DropdownContainer.ZIndex = 7
+    DropdownContainer.LayoutOrder = layoutOrder
+    DropdownContainer.Parent = parentFrame
+
+    local DropdownCorner = Instance.new("UICorner")
+    DropdownCorner.CornerRadius = UDim.new(0, 6)
+    DropdownCorner.Parent = DropdownContainer
+
+    local DropdownStroke = Instance.new("UIStroke")
+    DropdownStroke.Color = Color3.fromRGB(50, 40, 75)
+    DropdownStroke.Thickness = 1.5
+    DropdownStroke.Transparency = 0.2
+    DropdownStroke.Parent = DropdownContainer
+
+    local DropdownHeaderBtn = Instance.new("TextButton")
+    DropdownHeaderBtn.Size = UDim2.new(1, 0, 0, 24)
+    DropdownHeaderBtn.BackgroundTransparency = 1
+    DropdownHeaderBtn.Text = ""
+    DropdownHeaderBtn.ZIndex = 8
+    DropdownHeaderBtn.Parent = DropdownContainer
+
+    local DropdownTitle = Instance.new("TextLabel")
+    DropdownTitle.Size = UDim2.new(0.65, -10, 1, 0)
+    DropdownTitle.Position = UDim2.new(0, 8, 0, 0)
+    DropdownTitle.BackgroundTransparency = 1
+    DropdownTitle.Text = labelText
+    DropdownTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+    DropdownTitle.Font = Enum.Font.GothamBold
+    DropdownTitle.TextSize = 8.5
+    DropdownTitle.TextXAlignment = Enum.TextXAlignment.Left
+    DropdownTitle.ZIndex = 8
+    DropdownTitle.Parent = DropdownHeaderBtn
+
+    local ArrowLabel = Instance.new("TextLabel")
+    ArrowLabel.Size = UDim2.new(0, 20, 1, 0)
+    ArrowLabel.Position = UDim2.new(1, -26, 0, 0)
+    ArrowLabel.BackgroundTransparency = 1
+    ArrowLabel.Text = "▼"
+    ArrowLabel.TextColor3 = Color3.fromRGB(180, 100, 255)
+    ArrowLabel.Font = Enum.Font.GothamBold
+    ArrowLabel.TextSize = 10
+    ArrowLabel.ZIndex = 8
+    ArrowLabel.Parent = DropdownHeaderBtn
+
+    local MethodsContentFrame = Instance.new("Frame")
+    MethodsContentFrame.Name = "MethodsContent"
+    MethodsContentFrame.Size = UDim2.new(1, -12, 0, 22)
+    MethodsContentFrame.Position = UDim2.new(0, 6, 0, 26)
+    MethodsContentFrame.BackgroundTransparency = 1
+    MethodsContentFrame.ZIndex = 8
+    MethodsContentFrame.Parent = DropdownContainer
+
+    local UIListLayout_Methods = Instance.new("UIListLayout")
+    UIListLayout_Methods.FillDirection = Enum.FillDirection.Horizontal
+    UIListLayout_Methods.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    UIListLayout_Methods.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout_Methods.Padding = UDim.new(0, 4)
+    UIListLayout_Methods.Parent = MethodsContentFrame
+
+    local selectedMethod = options[1]
+    local methodButtons = {}
+
+    for i, mName in ipairs(options) do
+        local mBtn = Instance.new("TextButton")
+        mBtn.Name = generateObfuscatedName()
+        mBtn.Size = UDim2.new(1 / #options, -4, 1, 0)
+        mBtn.BackgroundColor3 = (mName == selectedMethod) and Color3.fromRGB(160, 30, 255) or Color3.fromRGB(25, 25, 35)
+        mBtn.BackgroundTransparency = (mName == selectedMethod) and 0.2 or 0.5
+        mBtn.Text = mName
+        mBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        mBtn.Font = Enum.Font.GothamBold
+        mBtn.TextSize = 7.5
+        mBtn.ZIndex = 9
+        mBtn.LayoutOrder = i
+        mBtn.Parent = MethodsContentFrame
+
+        local mCorner = Instance.new("UICorner")
+        mCorner.CornerRadius = UDim.new(0, 4)
+        mCorner.Parent = mBtn
+
+        mBtn.MouseButton1Click:Connect(function()
+            selectedMethod = mName
+            for name, btn in pairs(methodButtons) do
+                if name == selectedMethod then
+                    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+                else
+                    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+                end
+            end
+        end)
+
+        methodButtons[mName] = mBtn
+    end
+
+    local isDropdownOpen = false
+    DropdownHeaderBtn.MouseButton1Click:Connect(function()
+        isDropdownOpen = not isDropdownOpen
+        if isDropdownOpen then
+            ArrowLabel.Text = "▲"
+            TweenService:Create(DropdownContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 52)}):Play()
+        else
+            ArrowLabel.Text = "▼"
+            TweenService:Create(DropdownContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 24)}):Play()
+        end
+    end)
+    
+    return DropdownContainer
+end
+
+-- MOVEMENT SEKMESİ İÇERİKLERİ
+local SpeedSectionHeader = Instance.new("TextLabel")
+SpeedSectionHeader.Name = generateObfuscatedName()
+SpeedSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+SpeedSectionHeader.BackgroundTransparency = 1
+SpeedSectionHeader.Text = "  Speed"
+SpeedSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+SpeedSectionHeader.Font = Enum.Font.GothamBlack
+SpeedSectionHeader.TextSize = 11
+SpeedSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+SpeedSectionHeader.ZIndex = 7
+SpeedSectionHeader.LayoutOrder = 1
+SpeedSectionHeader.Parent = MovementTabFrame
+
+local NormalSpeedCard, SpeedTextBox = createOptionCard(2, "Normal Speed", "60")
+local StealSpeedCard, StealSpeedTextBox = createOptionCard(3, "Steal Speed", "30")
+local LaggerNormalCard, LaggerNormalTextBox = createOptionCard(4, "Lagger Normal Speed", "15.1")
+local LaggerStealCard, LaggerStealTextBox = createOptionCard(5, "Lagger Steal Speed", "10.1")
+local SwitchCard = createToggleCard(6, "Auto Switch To Carry Speed")
+
+local Spacer1 = Instance.new("Frame")
+Spacer1.Size = UDim2.new(1, 0, 0, 6)
+Spacer1.BackgroundTransparency = 1
+Spacer1.LayoutOrder = 7
+Spacer1.Parent = MovementTabFrame
+
+local TpDownSectionHeader = Instance.new("TextLabel")
+TpDownSectionHeader.Name = generateObfuscatedName()
+TpDownSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+TpDownSectionHeader.BackgroundTransparency = 1
+TpDownSectionHeader.Text = "  Tp Down"
+TpDownSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+TpDownSectionHeader.Font = Enum.Font.GothamBlack
+TpDownSectionHeader.TextSize = 11
+TpDownSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+TpDownSectionHeader.ZIndex = 7
+TpDownSectionHeader.LayoutOrder = 8
+TpDownSectionHeader.Parent = MovementTabFrame
+
+local TpDownDropdown = createDropdownCard(9, "Tp Down Method", {"Normal", "Slow Fall", "Zigzag"})
+local AutoTpDownCard = createToggleCard(10, "Auto Tp Down")
+local AutoTpHeightCard, AutoTpHeightTextBox = createOptionCard(11, "Auto Tp Down Height", "20")
+
+local Spacer2 = Instance.new("Frame")
+Spacer2.Size = UDim2.new(1, 0, 0, 6)
+Spacer2.BackgroundTransparency = 1
+Spacer2.LayoutOrder = 12
+Spacer2.Parent = MovementTabFrame
+
+local AntiRagdollSectionHeader = Instance.new("TextLabel")
+AntiRagdollSectionHeader.Name = generateObfuscatedName()
+AntiRagdollSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+AntiRagdollSectionHeader.BackgroundTransparency = 1
+AntiRagdollSectionHeader.Text = "  Anti Ragdoll"
+AntiRagdollSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+AntiRagdollSectionHeader.Font = Enum.Font.GothamBlack
+AntiRagdollSectionHeader.TextSize = 11
+AntiRagdollSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+AntiRagdollSectionHeader.ZIndex = 7
+AntiRagdollSectionHeader.LayoutOrder = 13
+AntiRagdollSectionHeader.Parent = MovementTabFrame
+
+local AntiRagdollToggleCard = createToggleCard(14, "Anti Ragdoll")
+local AntiRagdollDropdown = createDropdownCard(15, "Anti Ragdoll Version", {"V1", "V2"})
+local RagdollTpToggleCard = createToggleCard(16, "Ragdoll Tp")
+
+-- Ragdoll Tp Mode (açılır menü - V1 / V2)
+local RagdollTpModeContainer = Instance.new("Frame")
+RagdollTpModeContainer.Name = generateObfuscatedName()
+RagdollTpModeContainer.Size = UDim2.new(1, -4, 0, 24)
+RagdollTpModeContainer.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+RagdollTpModeContainer.BackgroundTransparency = 0.25
+RagdollTpModeContainer.ClipsDescendants = true
+RagdollTpModeContainer.ZIndex = 7
+RagdollTpModeContainer.LayoutOrder = 17
+RagdollTpModeContainer.Parent = MovementTabFrame
+
+local RagdollTpModeCorner = Instance.new("UICorner")
+RagdollTpModeCorner.CornerRadius = UDim.new(0, 6)
+RagdollTpModeCorner.Parent = RagdollTpModeContainer
+
+local RagdollTpModeStroke = Instance.new("UIStroke")
+RagdollTpModeStroke.Color = Color3.fromRGB(50, 40, 75)
+RagdollTpModeStroke.Thickness = 1.5
+RagdollTpModeStroke.Transparency = 0.2
+RagdollTpModeStroke.Parent = RagdollTpModeContainer
+
+local RagdollTpModeHeaderBtn = Instance.new("TextButton")
+RagdollTpModeHeaderBtn.Size = UDim2.new(1, 0, 0, 24)
+RagdollTpModeHeaderBtn.BackgroundTransparency = 1
+RagdollTpModeHeaderBtn.Text = ""
+RagdollTpModeHeaderBtn.ZIndex = 8
+RagdollTpModeHeaderBtn.Parent = RagdollTpModeContainer
+
+local RagdollTpModeTitle = Instance.new("TextLabel")
+RagdollTpModeTitle.Size = UDim2.new(0.65, -10, 1, 0)
+RagdollTpModeTitle.Position = UDim2.new(0, 8, 0, 0)
+RagdollTpModeTitle.BackgroundTransparency = 1
+RagdollTpModeTitle.Text = "Ragdoll Tp Mode"
+RagdollTpModeTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+RagdollTpModeTitle.Font = Enum.Font.GothamBold
+RagdollTpModeTitle.TextSize = 8.5
+RagdollTpModeTitle.TextXAlignment = Enum.TextXAlignment.Left
+RagdollTpModeTitle.ZIndex = 8
+RagdollTpModeTitle.Parent = RagdollTpModeHeaderBtn
+
+local RagdollTpModeArrow = Instance.new("TextLabel")
+RagdollTpModeArrow.Size = UDim2.new(0, 20, 1, 0)
+RagdollTpModeArrow.Position = UDim2.new(1, -26, 0, 0)
+RagdollTpModeArrow.BackgroundTransparency = 1
+RagdollTpModeArrow.Text = "▼"
+RagdollTpModeArrow.TextColor3 = Color3.fromRGB(180, 100, 255)
+RagdollTpModeArrow.Font = Enum.Font.GothamBold
+RagdollTpModeArrow.TextSize = 10
+RagdollTpModeArrow.ZIndex = 8
+RagdollTpModeArrow.Parent = RagdollTpModeHeaderBtn
+
+local RagdollTpModeContent = Instance.new("Frame")
+RagdollTpModeContent.Name = "MethodsContent"
+RagdollTpModeContent.Size = UDim2.new(1, -12, 0, 22)
+RagdollTpModeContent.Position = UDim2.new(0, 6, 0, 26)
+RagdollTpModeContent.BackgroundTransparency = 1
+RagdollTpModeContent.ZIndex = 8
+RagdollTpModeContent.Parent = RagdollTpModeContainer
+
+local RagdollTpModeList = Instance.new("UIListLayout")
+RagdollTpModeList.FillDirection = Enum.FillDirection.Horizontal
+RagdollTpModeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+RagdollTpModeList.SortOrder = Enum.SortOrder.LayoutOrder
+RagdollTpModeList.Padding = UDim.new(0, 4)
+RagdollTpModeList.Parent = RagdollTpModeContent
+
+local selectedRagdollTpMode = "V1"
+local ragdollTpModeButtons = {}
+
+local ragdollV1Btn = Instance.new("TextButton")
+ragdollV1Btn.Name = generateObfuscatedName()
+ragdollV1Btn.Size = UDim2.new(0.5, -4, 1, 0)
+ragdollV1Btn.BackgroundColor3 = Color3.fromRGB(160, 30, 255)
+ragdollV1Btn.BackgroundTransparency = 0.2
+ragdollV1Btn.Text = "V1"
+ragdollV1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ragdollV1Btn.Font = Enum.Font.GothamBold
+ragdollV1Btn.TextSize = 7.5
+ragdollV1Btn.ZIndex = 9
+ragdollV1Btn.LayoutOrder = 1
+ragdollV1Btn.Parent = RagdollTpModeContent
+
+local ragdollV1Corner = Instance.new("UICorner")
+ragdollV1Corner.CornerRadius = UDim.new(0, 4)
+ragdollV1Corner.Parent = ragdollV1Btn
+
+local ragdollV2Btn = Instance.new("TextButton")
+ragdollV2Btn.Name = generateObfuscatedName()
+ragdollV2Btn.Size = UDim2.new(0.5, -4, 1, 0)
+ragdollV2Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+ragdollV2Btn.BackgroundTransparency = 0.5
+ragdollV2Btn.Text = "V2"
+ragdollV2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ragdollV2Btn.Font = Enum.Font.GothamBold
+ragdollV2Btn.TextSize = 7.5
+ragdollV2Btn.ZIndex = 9
+ragdollV2Btn.LayoutOrder = 2
+ragdollV2Btn.Parent = RagdollTpModeContent
+
+local ragdollV2Corner = Instance.new("UICorner")
+ragdollV2Corner.CornerRadius = UDim.new(0, 4)
+ragdollV2Corner.Parent = ragdollV2Btn
+
+ragdollTpModeButtons["V1"] = ragdollV1Btn
+ragdollTpModeButtons["V2"] = ragdollV2Btn
+
+ragdollV1Btn.MouseButton1Click:Connect(function()
+    selectedRagdollTpMode = "V1"
+    TweenService:Create(ragdollV1Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(ragdollV2Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+ragdollV2Btn.MouseButton1Click:Connect(function()
+    selectedRagdollTpMode = "V2"
+    TweenService:Create(ragdollV2Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(ragdollV1Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+local isRagdollTpModeOpen = false
+RagdollTpModeHeaderBtn.MouseButton1Click:Connect(function()
+    isRagdollTpModeOpen = not isRagdollTpModeOpen
+    if isRagdollTpModeOpen then
+        RagdollTpModeArrow.Text = "▲"
+        TweenService:Create(RagdollTpModeContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 52)}):Play()
+    else
+        RagdollTpModeArrow.Text = "▼"
+        TweenService:Create(RagdollTpModeContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 24)}):Play()
+    end
+end)
+
+local Spacer3 = Instance.new("Frame")
+Spacer3.Size = UDim2.new(1, 0, 0, 6)
+Spacer3.BackgroundTransparency = 1
+Spacer3.LayoutOrder = 18
+Spacer3.Parent = MovementTabFrame
+
+local MultiJumpSectionHeader = Instance.new("TextLabel")
+MultiJumpSectionHeader.Name = generateObfuscatedName()
+MultiJumpSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+MultiJumpSectionHeader.BackgroundTransparency = 1
+MultiJumpSectionHeader.Text = "  Multi Jump"
+MultiJumpSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+MultiJumpSectionHeader.Font = Enum.Font.GothamBlack
+MultiJumpSectionHeader.TextSize = 11
+MultiJumpSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+MultiJumpSectionHeader.ZIndex = 7
+MultiJumpSectionHeader.LayoutOrder = 19
+MultiJumpSectionHeader.Parent = MovementTabFrame
+
+local MultiJumpToggleCard = createToggleCard(20, "Multi Jump")
+
+-- Multi Jump Mode (açılır menü - Click / Hold)
+local MultiJumpModeContainer = Instance.new("Frame")
+MultiJumpModeContainer.Name = generateObfuscatedName()
+MultiJumpModeContainer.Size = UDim2.new(1, -4, 0, 24)
+MultiJumpModeContainer.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+MultiJumpModeContainer.BackgroundTransparency = 0.25
+MultiJumpModeContainer.ClipsDescendants = true
+MultiJumpModeContainer.ZIndex = 7
+MultiJumpModeContainer.LayoutOrder = 21
+MultiJumpModeContainer.Parent = MovementTabFrame
+
+local MultiJumpModeCorner = Instance.new("UICorner")
+MultiJumpModeCorner.CornerRadius = UDim.new(0, 6)
+MultiJumpModeCorner.Parent = MultiJumpModeContainer
+
+local MultiJumpModeStroke = Instance.new("UIStroke")
+MultiJumpModeStroke.Color = Color3.fromRGB(50, 40, 75)
+MultiJumpModeStroke.Thickness = 1.5
+MultiJumpModeStroke.Transparency = 0.2
+MultiJumpModeStroke.Parent = MultiJumpModeContainer
+
+local MultiJumpModeHeaderBtn = Instance.new("TextButton")
+MultiJumpModeHeaderBtn.Size = UDim2.new(1, 0, 0, 24)
+MultiJumpModeHeaderBtn.BackgroundTransparency = 1
+MultiJumpModeHeaderBtn.Text = ""
+MultiJumpModeHeaderBtn.ZIndex = 8
+MultiJumpModeHeaderBtn.Parent = MultiJumpModeContainer
+
+local MultiJumpModeTitle = Instance.new("TextLabel")
+MultiJumpModeTitle.Size = UDim2.new(0.65, -10, 1, 0)
+MultiJumpModeTitle.Position = UDim2.new(0, 8, 0, 0)
+MultiJumpModeTitle.BackgroundTransparency = 1
+MultiJumpModeTitle.Text = "Multi Jump Mode"
+MultiJumpModeTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+MultiJumpModeTitle.Font = Enum.Font.GothamBold
+MultiJumpModeTitle.TextSize = 8.5
+MultiJumpModeTitle.TextXAlignment = Enum.TextXAlignment.Left
+MultiJumpModeTitle.ZIndex = 8
+MultiJumpModeTitle.Parent = MultiJumpModeHeaderBtn
+
+local MultiJumpModeArrow = Instance.new("TextLabel")
+MultiJumpModeArrow.Size = UDim2.new(0, 20, 1, 0)
+MultiJumpModeArrow.Position = UDim2.new(1, -26, 0, 0)
+MultiJumpModeArrow.BackgroundTransparency = 1
+MultiJumpModeArrow.Text = "▼"
+MultiJumpModeArrow.TextColor3 = Color3.fromRGB(180, 100, 255)
+MultiJumpModeArrow.Font = Enum.Font.GothamBold
+MultiJumpModeArrow.TextSize = 10
+MultiJumpModeArrow.ZIndex = 8
+MultiJumpModeArrow.Parent = MultiJumpModeHeaderBtn
+
+local MultiJumpModeContent = Instance.new("Frame")
+MultiJumpModeContent.Name = "MethodsContent"
+MultiJumpModeContent.Size = UDim2.new(1, -12, 0, 22)
+MultiJumpModeContent.Position = UDim2.new(0, 6, 0, 26)
+MultiJumpModeContent.BackgroundTransparency = 1
+MultiJumpModeContent.ZIndex = 8
+MultiJumpModeContent.Parent = MultiJumpModeContainer
+
+local MultiJumpModeList = Instance.new("UIListLayout")
+MultiJumpModeList.FillDirection = Enum.FillDirection.Horizontal
+MultiJumpModeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+MultiJumpModeList.SortOrder = Enum.SortOrder.LayoutOrder
+MultiJumpModeList.Padding = UDim.new(0, 4)
+MultiJumpModeList.Parent = MultiJumpModeContent
+
+local selectedMultiJumpMode = "Click"
+local multiJumpModeButtons = {}
+
+local clickBtn = Instance.new("TextButton")
+clickBtn.Name = generateObfuscatedName()
+clickBtn.Size = UDim2.new(0.5, -4, 1, 0)
+clickBtn.BackgroundColor3 = Color3.fromRGB(160, 30, 255)
+clickBtn.BackgroundTransparency = 0.2
+clickBtn.Text = "Click"
+clickBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+clickBtn.Font = Enum.Font.GothamBold
+clickBtn.TextSize = 7.5
+clickBtn.ZIndex = 9
+clickBtn.LayoutOrder = 1
+clickBtn.Parent = MultiJumpModeContent
+
+local clickCorner = Instance.new("UICorner")
+clickCorner.CornerRadius = UDim.new(0, 4)
+clickCorner.Parent = clickBtn
+
+local holdBtn = Instance.new("TextButton")
+holdBtn.Name = generateObfuscatedName()
+holdBtn.Size = UDim2.new(0.5, -4, 1, 0)
+holdBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+holdBtn.BackgroundTransparency = 0.5
+holdBtn.Text = "Hold"
+holdBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+holdBtn.Font = Enum.Font.GothamBold
+holdBtn.TextSize = 7.5
+holdBtn.ZIndex = 9
+holdBtn.LayoutOrder = 2
+holdBtn.Parent = MultiJumpModeContent
+
+local holdCorner = Instance.new("UICorner")
+holdCorner.CornerRadius = UDim.new(0, 4)
+holdCorner.Parent = holdBtn
+
+multiJumpModeButtons["Click"] = clickBtn
+multiJumpModeButtons["Hold"] = holdBtn
+
+clickBtn.MouseButton1Click:Connect(function()
+    selectedMultiJumpMode = "Click"
+    TweenService:Create(clickBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(holdBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+holdBtn.MouseButton1Click:Connect(function()
+    selectedMultiJumpMode = "Hold"
+    TweenService:Create(holdBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(clickBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+local isMultiJumpModeOpen = false
+MultiJumpModeHeaderBtn.MouseButton1Click:Connect(function()
+    isMultiJumpModeOpen = not isMultiJumpModeOpen
+    if isMultiJumpModeOpen then
+        MultiJumpModeArrow.Text = "▲"
+        TweenService:Create(MultiJumpModeContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 52)}):Play()
+    else
+        MultiJumpModeArrow.Text = "▼"
+        TweenService:Create(MultiJumpModeContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 24)}):Play()
+    end
+end)
+
+local MultiJumpPowerCard, MultiJumpPowerTextBox = createOptionCard(22, "Multi Jump Power", "45")
+
+-- DİĞER SEKMELER
+local tabNames = {"Movement", "Combat", "Visuals", "Settings", "Keybinds"}
+for _, tName in ipairs(tabNames) do
+    if tName ~= "Movement" then
+        local f = Instance.new("ScrollingFrame")
+        f.Name = generateObfuscatedName()
+        f.Size = UDim2.new(1, 0, 1, 0)
+        f.BackgroundTransparency = 1
+        f.Visible = false
+        f.ZIndex = 6
+        f.CanvasSize = UDim2.new(0, 0, 0, 0)
+        f.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        f.ScrollBarThickness = 0
+        f.Parent = ContentContainer
+        tabFrames[tName] = f
+
+        local list = Instance.new("UIListLayout")
+        list.SortOrder = Enum.SortOrder.LayoutOrder
+        list.Padding = UDim.new(0, 3)
+        list.Parent = f
+    end
+end
+
+-- COMBAT SEKMESİ İÇERİKLERİ
+local CombatTab = tabFrames["Combat"]
+
+local AutoStealSectionHeader = Instance.new("TextLabel")
+AutoStealSectionHeader.Name = generateObfuscatedName()
+AutoStealSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+AutoStealSectionHeader.BackgroundTransparency = 1
+AutoStealSectionHeader.Text = "  Auto Steal"
+AutoStealSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+AutoStealSectionHeader.Font = Enum.Font.GothamBlack
+AutoStealSectionHeader.TextSize = 11
+AutoStealSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+AutoStealSectionHeader.ZIndex = 7
+AutoStealSectionHeader.LayoutOrder = 1
+AutoStealSectionHeader.Parent = CombatTab
+
+local AutoStealToggle = createToggleCard(2, "Auto Steal", CombatTab)
+local AutoStealDropdown = createDropdownCard(3, "Auto Steal Method", {"Normal", "Fast", "Semi"}, CombatTab)
+
+local CombatSpacer1 = Instance.new("Frame")
+CombatSpacer1.Size = UDim2.new(1, 0, 0, 6)
+CombatSpacer1.BackgroundTransparency = 1
+CombatSpacer1.LayoutOrder = 4
+CombatSpacer1.Parent = CombatTab
+
+local BatSettingsHeader = Instance.new("TextLabel")
+BatSettingsHeader.Name = generateObfuscatedName()
+BatSettingsHeader.Size = UDim2.new(1, 0, 0, 16)
+BatSettingsHeader.BackgroundTransparency = 1
+BatSettingsHeader.Text = "  Bat Settings"
+BatSettingsHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+BatSettingsHeader.Font = Enum.Font.GothamBlack
+BatSettingsHeader.TextSize = 11
+BatSettingsHeader.TextXAlignment = Enum.TextXAlignment.Left
+BatSettingsHeader.ZIndex = 7
+BatSettingsHeader.LayoutOrder = 5
+BatSettingsHeader.Parent = CombatTab
+
+local BatAimbotCard = Instance.new("Frame")
+BatAimbotCard.Name = generateObfuscatedName()
+BatAimbotCard.Size = UDim2.new(1, -4, 0, 65)
+BatAimbotCard.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+BatAimbotCard.BackgroundTransparency = 0.25
+BatAimbotCard.ZIndex = 7
+BatAimbotCard.LayoutOrder = 6
+BatAimbotCard.Parent = CombatTab
+
+local BatCardCorner = Instance.new("UICorner")
+BatCardCorner.CornerRadius = UDim.new(0, 6)
+BatCardCorner.Parent = BatAimbotCard
+
+local BatCardStroke = Instance.new("UIStroke")
+BatCardStroke.Color = Color3.fromRGB(50, 40, 75)
+BatCardStroke.Thickness = 1.5
+BatCardStroke.Transparency = 0.2
+BatCardStroke.Parent = BatAimbotCard
+
+local BatAimbotTitle = Instance.new("TextLabel")
+BatAimbotTitle.Name = "Title"
+BatAimbotTitle.Size = UDim2.new(1, -12, 0, 18)
+BatAimbotTitle.Position = UDim2.new(0, 8, 0, 2)
+BatAimbotTitle.BackgroundTransparency = 1
+BatAimbotTitle.Text = "Bat Aimbot mode"
+BatAimbotTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+BatAimbotTitle.Font = Enum.Font.GothamBold
+BatAimbotTitle.TextSize = 8.5
+BatAimbotTitle.TextXAlignment = Enum.TextXAlignment.Left
+BatAimbotTitle.ZIndex = 8
+BatAimbotTitle.Parent = BatAimbotCard
+
+local ModeRow1 = Instance.new("Frame")
+ModeRow1.Size = UDim2.new(1, -16, 0, 18)
+ModeRow1.Position = UDim2.new(0, 8, 0, 22)
+ModeRow1.BackgroundTransparency = 1
+ModeRow1.ZIndex = 8
+ModeRow1.Parent = BatAimbotCard
+
+local NormalBtn = Instance.new("TextButton")
+NormalBtn.Name = generateObfuscatedName()
+NormalBtn.Size = UDim2.new(0.5, -3, 1, 0)
+NormalBtn.Position = UDim2.new(0, 0, 0, 0)
+NormalBtn.BackgroundColor3 = Color3.fromRGB(160, 30, 255)
+NormalBtn.BackgroundTransparency = 0.2
+NormalBtn.Text = "Normal"
+NormalBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+NormalBtn.Font = Enum.Font.GothamBold
+NormalBtn.TextSize = 8.5
+NormalBtn.ZIndex = 9
+NormalBtn.Parent = ModeRow1
+
+local NormalCorner = Instance.new("UICorner")
+NormalCorner.CornerRadius = UDim.new(0, 4)
+NormalCorner.Parent = NormalBtn
+
+local BypassBtn = Instance.new("TextButton")
+BypassBtn.Name = generateObfuscatedName()
+BypassBtn.Size = UDim2.new(0.5, -3, 1, 0)
+BypassBtn.Position = UDim2.new(0.5, 3, 0, 0)
+BypassBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+BypassBtn.BackgroundTransparency = 0.5
+BypassBtn.Text = "Bypass"
+BypassBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BypassBtn.Font = Enum.Font.GothamBold
+BypassBtn.TextSize = 8.5
+BypassBtn.ZIndex = 9
+BypassBtn.Parent = ModeRow1
+
+local BypassCorner = Instance.new("UICorner")
+BypassCorner.CornerRadius = UDim.new(0, 4)
+BypassCorner.Parent = BypassBtn
+
+local ModeRow2 = Instance.new("Frame")
+ModeRow2.Size = UDim2.new(1, -16, 0, 18)
+ModeRow2.Position = UDim2.new(0, 8, 0, 43)
+ModeRow2.BackgroundTransparency = 1
+ModeRow2.ZIndex = 8
+ModeRow2.Parent = BatAimbotCard
+
+local V1Btn = Instance.new("TextButton")
+V1Btn.Name = generateObfuscatedName()
+V1Btn.Size = UDim2.new(0.5, -3, 1, 0)
+V1Btn.Position = UDim2.new(0, 0, 0, 0)
+V1Btn.BackgroundColor3 = Color3.fromRGB(160, 30, 255)
+V1Btn.BackgroundTransparency = 0.2
+V1Btn.Text = "V1"
+V1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+V1Btn.Font = Enum.Font.GothamBold
+V1Btn.TextSize = 8.5
+V1Btn.ZIndex = 9
+V1Btn.Parent = ModeRow2
+
+local V1Corner = Instance.new("UICorner")
+V1Corner.CornerRadius = UDim.new(0, 4)
+V1Corner.Parent = V1Btn
+
+local V2Btn = Instance.new("TextButton")
+V2Btn.Name = generateObfuscatedName()
+V2Btn.Size = UDim2.new(0.5, -3, 1, 0)
+V2Btn.Position = UDim2.new(0.5, 3, 0, 0)
+V2Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+V2Btn.BackgroundTransparency = 0.5
+V2Btn.Text = "V2"
+V2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+V2Btn.Font = Enum.Font.GothamBold
+V2Btn.TextSize = 8.5
+V2Btn.ZIndex = 9
+V2Btn.Parent = ModeRow2
+
+local V2Corner = Instance.new("UICorner")
+V2Corner.CornerRadius = UDim.new(0, 4)
+V2Corner.Parent = V2Btn
+
+local BatAimbotSpeedCard, BatAimbotSpeedTextBox = createOptionCard(7, "Bat Aimbot Speed", "65", CombatTab)
+
+local selectedMode = "Normal"
+NormalBtn.MouseButton1Click:Connect(function()
+    selectedMode = "Normal"
+    TweenService:Create(NormalBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(BypassBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+BypassBtn.MouseButton1Click:Connect(function()
+    selectedMode = "Bypass"
+    TweenService:Create(BypassBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(NormalBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+local selectedVersion = "V1"
+V1Btn.MouseButton1Click:Connect(function()
+    selectedVersion = "V1"
+    TweenService:Create(V1Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(V2Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+V2Btn.MouseButton1Click:Connect(function()
+    selectedVersion = "V2"
+    TweenService:Create(V2Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(V1Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+local TpBatModeDropdown = createDropdownCard(8, "Tp Bat Mode", {"V1", "V2"}, CombatTab)
+
+local CombatSpacer2 = Instance.new("Frame")
+CombatSpacer2.Size = UDim2.new(1, 0, 0, 6)
+CombatSpacer2.BackgroundTransparency = 1
+CombatSpacer2.LayoutOrder = 9
+CombatSpacer2.Parent = CombatTab
+
+local CountersSectionHeader = Instance.new("TextLabel")
+CountersSectionHeader.Name = generateObfuscatedName()
+CountersSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+CountersSectionHeader.BackgroundTransparency = 1
+CountersSectionHeader.Text = "  Counters"
+CountersSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+CountersSectionHeader.Font = Enum.Font.GothamBlack
+CountersSectionHeader.TextSize = 11
+CountersSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+CountersSectionHeader.ZIndex = 7
+CountersSectionHeader.LayoutOrder = 10
+CountersSectionHeader.Parent = CombatTab
+
+local BatCounterCard = createToggleCard(11, "Bat Counter", CombatTab)
+local MedusaCounterCard = createToggleCard(12, "Medusa Counter", CombatTab)
+
+local CombatSpacer3 = Instance.new("Frame")
+CombatSpacer3.Size = UDim2.new(1, 0, 0, 6)
+CombatSpacer3.BackgroundTransparency = 1
+CombatSpacer3.LayoutOrder = 13
+CombatSpacer3.Parent = CombatTab
+
+local AntisSectionHeader = Instance.new("TextLabel")
+AntisSectionHeader.Name = generateObfuscatedName()
+AntisSectionHeader.Size = UDim2.new(1, 0, 0, 16)
+AntisSectionHeader.BackgroundTransparency = 1
+AntisSectionHeader.Text = "  Antis"
+AntisSectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+AntisSectionHeader.Font = Enum.Font.GothamBlack
+AntisSectionHeader.TextSize = 11
+AntisSectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+AntisSectionHeader.ZIndex = 7
+AntisSectionHeader.LayoutOrder = 14
+AntisSectionHeader.Parent = CombatTab
+
+local AntiBatCard = createToggleCard(15, "Anti Bat", CombatTab)
+local AntiAntiDesyncCard = createToggleCard(16, "Anti Anti Desync", CombatTab)
+local AntiTpBatCard = createToggleCard(17, "Anti Tp Bat", CombatTab)
+local AntiVoidCard = createToggleCard(18, "Anti Void", CombatTab)
+
+-- ========== AUTO PLAY SECTION (VISUAL ONLY) ==========
+local CombatSpacer4 = Instance.new("Frame")
+CombatSpacer4.Size = UDim2.new(1, 0, 0, 6)
+CombatSpacer4.BackgroundTransparency = 1
+CombatSpacer4.LayoutOrder = 19
+CombatSpacer4.Parent = CombatTab
+
+local AutoPlaySectionHeader = Instance.new("TextLabel")
+AutoPlaySectionHeader.Name = generateObfuscatedName()
+AutoPlaySectionHeader.Size = UDim2.new(1, 0, 0, 16)
+AutoPlaySectionHeader.BackgroundTransparency = 1
+AutoPlaySectionHeader.Text = "  Auto Play"
+AutoPlaySectionHeader.TextColor3 = Color3.fromRGB(180, 100, 255)
+AutoPlaySectionHeader.Font = Enum.Font.GothamBlack
+AutoPlaySectionHeader.TextSize = 11
+AutoPlaySectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+AutoPlaySectionHeader.ZIndex = 7
+AutoPlaySectionHeader.LayoutOrder = 20
+AutoPlaySectionHeader.Parent = CombatTab
+
+local AutoGoToCorrectBaseCard = createToggleCard(21, "Auto Go To Correct Base", CombatTab)
+
+-- Auto Play Mode (açılır menü - Half / Fully)
+local AutoPlayModeContainer = Instance.new("Frame")
+AutoPlayModeContainer.Name = generateObfuscatedName()
+AutoPlayModeContainer.Size = UDim2.new(1, -4, 0, 24)
+AutoPlayModeContainer.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+AutoPlayModeContainer.BackgroundTransparency = 0.25
+AutoPlayModeContainer.ClipsDescendants = true
+AutoPlayModeContainer.ZIndex = 7
+AutoPlayModeContainer.LayoutOrder = 22
+AutoPlayModeContainer.Parent = CombatTab
+
+local AutoPlayModeCorner = Instance.new("UICorner")
+AutoPlayModeCorner.CornerRadius = UDim.new(0, 6)
+AutoPlayModeCorner.Parent = AutoPlayModeContainer
+
+local AutoPlayModeStroke = Instance.new("UIStroke")
+AutoPlayModeStroke.Color = Color3.fromRGB(50, 40, 75)
+AutoPlayModeStroke.Thickness = 1.5
+AutoPlayModeStroke.Transparency = 0.2
+AutoPlayModeStroke.Parent = AutoPlayModeContainer
+
+local AutoPlayModeHeaderBtn = Instance.new("TextButton")
+AutoPlayModeHeaderBtn.Size = UDim2.new(1, 0, 0, 24)
+AutoPlayModeHeaderBtn.BackgroundTransparency = 1
+AutoPlayModeHeaderBtn.Text = ""
+AutoPlayModeHeaderBtn.ZIndex = 8
+AutoPlayModeHeaderBtn.Parent = AutoPlayModeContainer
+
+local AutoPlayModeTitle = Instance.new("TextLabel")
+AutoPlayModeTitle.Size = UDim2.new(0.65, -10, 1, 0)
+AutoPlayModeTitle.Position = UDim2.new(0, 8, 0, 0)
+AutoPlayModeTitle.BackgroundTransparency = 1
+AutoPlayModeTitle.Text = "Auto Play Mode"
+AutoPlayModeTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+AutoPlayModeTitle.Font = Enum.Font.GothamBold
+AutoPlayModeTitle.TextSize = 8.5
+AutoPlayModeTitle.TextXAlignment = Enum.TextXAlignment.Left
+AutoPlayModeTitle.ZIndex = 8
+AutoPlayModeTitle.Parent = AutoPlayModeHeaderBtn
+
+local AutoPlayModeArrow = Instance.new("TextLabel")
+AutoPlayModeArrow.Size = UDim2.new(0, 20, 1, 0)
+AutoPlayModeArrow.Position = UDim2.new(1, -26, 0, 0)
+AutoPlayModeArrow.BackgroundTransparency = 1
+AutoPlayModeArrow.Text = "▼"
+AutoPlayModeArrow.TextColor3 = Color3.fromRGB(180, 100, 255)
+AutoPlayModeArrow.Font = Enum.Font.GothamBold
+AutoPlayModeArrow.TextSize = 10
+AutoPlayModeArrow.ZIndex = 8
+AutoPlayModeArrow.Parent = AutoPlayModeHeaderBtn
+
+local AutoPlayModeContent = Instance.new("Frame")
+AutoPlayModeContent.Name = "MethodsContent"
+AutoPlayModeContent.Size = UDim2.new(1, -12, 0, 22)
+AutoPlayModeContent.Position = UDim2.new(0, 6, 0, 26)
+AutoPlayModeContent.BackgroundTransparency = 1
+AutoPlayModeContent.ZIndex = 8
+AutoPlayModeContent.Parent = AutoPlayModeContainer
+
+local AutoPlayModeList = Instance.new("UIListLayout")
+AutoPlayModeList.FillDirection = Enum.FillDirection.Horizontal
+AutoPlayModeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+AutoPlayModeList.SortOrder = Enum.SortOrder.LayoutOrder
+AutoPlayModeList.Padding = UDim.new(0, 4)
+AutoPlayModeList.Parent = AutoPlayModeContent
+
+local selectedAutoPlayMode = "Half"
+local autoPlayModeButtons = {}
+
+local halfBtn = Instance.new("TextButton")
+halfBtn.Name = generateObfuscatedName()
+halfBtn.Size = UDim2.new(0.5, -4, 1, 0)
+halfBtn.BackgroundColor3 = Color3.fromRGB(160, 30, 255)
+halfBtn.BackgroundTransparency = 0.2
+halfBtn.Text = "Half"
+halfBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+halfBtn.Font = Enum.Font.GothamBold
+halfBtn.TextSize = 7.5
+halfBtn.ZIndex = 9
+halfBtn.LayoutOrder = 1
+halfBtn.Parent = AutoPlayModeContent
+
+local halfCorner = Instance.new("UICorner")
+halfCorner.CornerRadius = UDim.new(0, 4)
+halfCorner.Parent = halfBtn
+
+local fullyBtn = Instance.new("TextButton")
+fullyBtn.Name = generateObfuscatedName()
+fullyBtn.Size = UDim2.new(0.5, -4, 1, 0)
+fullyBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+fullyBtn.BackgroundTransparency = 0.5
+fullyBtn.Text = "Fully"
+fullyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+fullyBtn.Font = Enum.Font.GothamBold
+fullyBtn.TextSize = 7.5
+fullyBtn.ZIndex = 9
+fullyBtn.LayoutOrder = 2
+fullyBtn.Parent = AutoPlayModeContent
+
+local fullyCorner = Instance.new("UICorner")
+fullyCorner.CornerRadius = UDim.new(0, 4)
+fullyCorner.Parent = fullyBtn
+
+autoPlayModeButtons["Half"] = halfBtn
+autoPlayModeButtons["Fully"] = fullyBtn
+
+halfBtn.MouseButton1Click:Connect(function()
+    selectedAutoPlayMode = "Half"
+    TweenService:Create(halfBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(fullyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+fullyBtn.MouseButton1Click:Connect(function()
+    selectedAutoPlayMode = "Fully"
+    TweenService:Create(fullyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 30, 255), BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(halfBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 35), BackgroundTransparency = 0.5}):Play()
+end)
+
+local isAutoPlayModeOpen = false
+AutoPlayModeHeaderBtn.MouseButton1Click:Connect(function()
+    isAutoPlayModeOpen = not isAutoPlayModeOpen
+    if isAutoPlayModeOpen then
+        AutoPlayModeArrow.Text = "▲"
+        TweenService:Create(AutoPlayModeContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 52)}):Play()
+    else
+        AutoPlayModeArrow.Text = "▼"
+        TweenService:Create(AutoPlayModeContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, -4, 0, 24)}):Play()
+    end
+end)
+
+local MakeSyncAutoPlayCard = createToggleCard(23, "Make Sync Auto Play With Auto Steal", CombatTab)
+-- ========== END AUTO PLAY SECTION ==========
+
+-- SEKMELER ARASI GEÇİŞ
+local tabButtons = {}
+local activeTab = "Movement"
+
+local function updateTabsUI()
+    for name, btn in pairs(tabButtons) do
+        if name == activeTab then
+            TweenService:Create(btn, TweenInfo.new(0.2), {
+                BackgroundTransparency = 0.2,
+                BackgroundColor3 = Color3.fromRGB(160, 30, 255),
+                TextColor3 = Color3.fromRGB(255, 255, 255)
+            }):Play()
+            if tabFrames[name] then tabFrames[name].Visible = true end
+        else
+            TweenService:Create(btn, TweenInfo.new(0.2), {
+                BackgroundTransparency = 0.7,
+                BackgroundColor3 = Color3.fromRGB(20, 20, 28),
+                TextColor3 = Color3.fromRGB(140, 140, 160)
+            }):Play()
+            if tabFrames[name] then tabFrames[name].Visible = false end
+        end
+    end
+end
+
+for i, tName in ipairs(tabNames) do
+    local btn = Instance.new("TextButton")
+    btn.Name = generateObfuscatedName()
+    btn.Size = UDim2.new(0.19, -2, 1, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+    btn.BackgroundTransparency = 0.7
+    btn.Text = tName
+    btn.TextColor3 = Color3.fromRGB(140, 140, 160)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 8
+    btn.ZIndex = 6
+    btn.LayoutOrder = i
+    btn.Parent = TabsContainer
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 5)
+    btnCorner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        activeTab = tName
+        updateTabsUI()
+    end)
+
+    tabButtons[tName] = btn
+end
+
+updateTabsUI()
+
+-- =========================================
+-- [ BLUR, SÜRÜKLEME VE ETKİLEŞİM SİSTEMİ ]
+-- =========================================
+local BlurOverlay_View = Instance.new("Frame")
+BlurOverlay_View.Size = UDim2.new(1, 0, 1, 0)
+BlurOverlay_View.Position = UDim2.new(0, 0, 0, 0)
+BlurOverlay_View.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+BlurOverlay_View.BackgroundTransparency = 1
+BlurOverlay_View.ZIndex = 10
+BlurOverlay_View.Parent = MainFrame_View
+
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Name = generateObfuscatedName()
+MinimizeBtn.Size = UDim2.new(0, 24, 0, 24)
+MinimizeBtn.Position = UDim2.new(1, -30, 0, 8)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MinimizeBtn.BackgroundTransparency = 0.2
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.TextSize = 20
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.ZIndex = 20
+MinimizeBtn.Parent = MainFrame_View
+
+local MiniBtnCorner = Instance.new("UICorner")
+MiniBtnCorner.CornerRadius = UDim.new(0, 6)
+MiniBtnCorner.Parent = MinimizeBtn
+
+local ToggleButton = Instance.new("ImageButton")
+ToggleButton.Name = generateObfuscatedName()
+ToggleButton.Size = UDim2.new(0, 115, 0, 38)
+ToggleButton.Position = UDim2.new(0, 20, 0, 60)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+ToggleButton.BackgroundTransparency = 0.15
+ToggleButton.ScaleType = Enum.ScaleType.Fit
+ToggleButton.Visible = false
+ToggleButton.Active = true
+ToggleButton.ZIndex = 50
+ToggleButton.Parent = ScreenGui
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 8)
+ToggleCorner.Parent = ToggleButton
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Color = Color3.fromRGB(170, 0, 255)
+ToggleStroke.Thickness = 2
+ToggleStroke.Parent = ToggleButton
+
+local drag_view_dragging = false
+local drag_view_dragInput, drag_view_dragStart, drag_view_startPos
+
+OuterFrame_View.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        drag_view_dragging = true
+        drag_view_dragStart = input.Position
+        drag_view_startPos = OuterFrame_View.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                drag_view_dragging = false
+            end
+        end)
+    end
+end)
+
+OuterFrame_View.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        drag_view_dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == drag_view_dragInput and drag_view_dragging then
+        local delta = input.Position - drag_view_dragStart
+        OuterFrame_View.Position = UDim2.new(
+            drag_view_startPos.X.Scale,
+            drag_view_startPos.X.Offset + delta.X,
+            drag_view_startPos.Y.Scale,
+            drag_view_startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+local drag_toggle_dragging = false
+local drag_toggle_dragInput, drag_toggle_dragStart, drag_toggle_startPos
+local drag_toggle_moved = false
+
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        drag_toggle_dragging = true
+        drag_toggle_moved = false
+        drag_toggle_dragStart = input.Position
+        drag_toggle_startPos = ToggleButton.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                drag_toggle_dragging = false
+            end
+        end)
+    end
+end)
+
+ToggleButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        drag_toggle_dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == drag_toggle_dragInput and drag_toggle_dragging then
+        local delta = input.Position - drag_toggle_dragStart
+        if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+            drag_toggle_moved = true
+        end
+        ToggleButton.Position = UDim2.new(
+            drag_toggle_startPos.X.Scale,
+            drag_toggle_startPos.X.Offset + delta.X,
+            drag_toggle_startPos.Y.Scale,
+            drag_toggle_startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+local lastInteraction_View = tick()
+local isBlurred_View = false
+
+local function resetInactivity_View()
+    lastInteraction_View = tick()
+    if isBlurred_View then
+        isBlurred_View = false
+        TweenService:Create(BlurOverlay_View, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(BgImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+        TweenService:Create(OldImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+        TweenService:Create(MinimizeBtn, TweenInfo.new(0.3), {BackgroundTransparency = 0.2, TextTransparency = 0}):Play()
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local mousePos = input.Position
+        local pos = OuterFrame_View.AbsolutePosition
+        local size = OuterFrame_View.AbsoluteSize
+        
+        if mousePos.X >= pos.X and mousePos.X <= pos.X + size.X and
+           mousePos.Y >= pos.Y and mousePos.Y <= pos.Y + size.Y then
+            if OuterFrame_View.Visible then
+                resetInactivity_View()
+            end
+        end
+    end
+end)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    OuterFrame_View.Visible = false
+    ToggleButton.Visible = true
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    if not drag_toggle_moved then
+        ToggleButton.Visible = false
+        OuterFrame_View.Visible = true
+        resetInactivity_View()
+    end
+end)
+
+task.spawn(function()
+    while OuterFrame_View and OuterFrame_View.Parent do
+        if UIGradient_View and UIGradient_View.Parent then
+            UIGradient_View.Rotation = (UIGradient_View.Rotation + 2.4) % 360
+        end
+        task.wait(0.02)
+    end
+end)
+
+OuterFrame_View.InputChanged:Connect(resetInactivity_View)
+
+task.spawn(function()
+    while ScreenGui and ScreenGui.Parent do
+        task.wait(0.2)
+        if isIntroEnded then
+            if tick() - lastInteraction_View >= 5 and not isBlurred_View then
+                isBlurred_View = true
+                TweenService:Create(BlurOverlay_View, TweenInfo.new(0.5), {BackgroundTransparency = 0.60}):Play()
+                TweenService:Create(BgImageLabel, TweenInfo.new(0.5), {ImageTransparency = 0.55}):Play()
+                TweenService:Create(OldImageLabel, TweenInfo.new(0.5), {ImageTransparency = 0.55}):Play()
+                TweenService:Create(MinimizeBtn, TweenInfo.new(0.5), {BackgroundTransparency = 0.55, TextTransparency = 0.55}):Play()
+            end
+        end
+    end
+end)
+
+-- RESİM YÜKLEME FONKSİYONU
+local function loadAssetImage(targetImageLabel, id)
+    targetImageLabel.Image = "rbxassetid://" .. tostring(id)
+    local InsertService = game:GetService("InsertService")
+    
+    pcall(function()
+        local result = InsertService:LoadAsset(id)
+        if result then
+            local decal = result:FindFirstChildOfClass("Decal") or result:FindFirstChildWhichIsA("Decal", true)
+            if decal and decal.Texture then
+                targetImageLabel.Image = decal.Texture
+                return
+            end
+        end
+    end)
+
+    pcall(function()
+        local rawData = game:HttpGet("https://assetdelivery.roblox.com/v1/asset/?id=" .. tostring(id))
+        if rawData then
+            local realId = rawData:match('<url>http[s]?://.-id=(%d+)</url>') or rawData:match('id=(%d+)')
+            if realId then
+                targetImageLabel.Image = "rbxassetid://" .. realId
+            end
+        end
+    end)
+end
+
+task.spawn(function()
+    loadAssetImage(BgImageLabel, bgAssetId)
+    loadAssetImage(OldImageLabel, oldAssetId)
+    loadAssetImage(ToggleButton, oldAssetId)
+end)
+
+-- =========================================
+-- [ ANOMALY HUB AUTO STEAL ALT UI]
+-- =========================================
+local MainFrame_Anomaly = Instance.new("Frame")
+MainFrame_Anomaly.Name = generateObfuscatedName()
+MainFrame_Anomaly.Size = UDim2.new(0, 240, 0, 90)
+MainFrame_Anomaly.Position = UDim2.new(0.12, 0, 0.82, -45)
+MainFrame_Anomaly.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame_Anomaly.BorderSizePixel = 0
+MainFrame_Anomaly.Active = true
+MainFrame_Anomaly.Visible = false
+MainFrame_Anomaly.Parent = ScreenGui
+
+local MainUICorner_Anomaly = Instance.new("UICorner")
+MainUICorner_Anomaly.CornerRadius = UDim.new(0, 8)
+MainUICorner_Anomaly.Parent = MainFrame_Anomaly
+
+local AnimatedBorder_Anomaly = Instance.new("Frame")
+AnimatedBorder_Anomaly.Name = generateObfuscatedName()
+AnimatedBorder_Anomaly.Size = UDim2.new(1, 4, 1, 4)
+AnimatedBorder_Anomaly.Position = UDim2.new(0, -2, 0, -2)
+AnimatedBorder_Anomaly.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+AnimatedBorder_Anomaly.BorderSizePixel = 0
+AnimatedBorder_Anomaly.ZIndex = 0
+AnimatedBorder_Anomaly.Parent = MainFrame_Anomaly
+
+local BorderCorner_Anomaly = Instance.new("UICorner")
+BorderCorner_Anomaly.CornerRadius = UDim.new(0, 10)
+BorderCorner_Anomaly.Parent = AnimatedBorder_Anomaly
+
+local BorderGradient_Anomaly = Instance.new("UIGradient")
+BorderGradient_Anomaly.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(170, 0, 255)),
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(15, 15, 15)),
+    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(170, 0, 255)),
+    ColorSequenceKeypoint.new(0.8, Color3.fromRGB(15, 15, 15)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 0, 255))
+})
+BorderGradient_Anomaly.Parent = AnimatedBorder_Anomaly
+
+task.spawn(function()
+    while MainFrame_Anomaly and MainFrame_Anomaly.Parent do
+        BorderGradient_Anomaly.Rotation = (BorderGradient_Anomaly.Rotation + 3) % 360
+        task.wait(0.02)
+    end
+end)
+
+local BgText_Anomaly = Instance.new("TextLabel")
+BgText_Anomaly.Name = generateObfuscatedName()
+BgText_Anomaly.Size = UDim2.new(1, 0, 1, -20)
+BgText_Anomaly.Position = UDim2.new(0, 0, 0, 10)
+BgText_Anomaly.BackgroundTransparency = 1
+BgText_Anomaly.Text = "ANOMALY"
+BgText_Anomaly.TextColor3 = Color3.fromRGB(255, 255, 255)
+BgText_Anomaly.TextTransparency = 0.55
+BgText_Anomaly.Font = Enum.Font.GothamBlack
+BgText_Anomaly.TextSize = 44
+BgText_Anomaly.ZIndex = 1
+BgText_Anomaly.Active = false
+BgText_Anomaly.Parent = MainFrame_Anomaly
+
+local TextStroke_Anomaly = Instance.new("UIStroke")
+TextStroke_Anomaly.Thickness = 1.2
+TextStroke_Anomaly.Color = Color3.fromRGB(200, 100, 255)
+TextStroke_Anomaly.Transparency = 0.5
+TextStroke_Anomaly.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+TextStroke_Anomaly.Parent = BgText_Anomaly
+
+local BgTextGradient_Anomaly = Instance.new("UIGradient")
+BgTextGradient_Anomaly.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 20, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 20, 255))
+})
+BgTextGradient_Anomaly.Parent = BgText_Anomaly
+
+task.spawn(function()
+    while MainFrame_Anomaly and MainFrame_Anomaly.Parent do
+        BgTextGradient_Anomaly.Rotation = (BgTextGradient_Anomaly.Rotation + 2) % 360
+        task.wait(0.03)
+    end
+end)
+
+local TitleLabel_Anomaly = Instance.new("TextLabel")
+TitleLabel_Anomaly.Name = generateObfuscatedName()
+TitleLabel_Anomaly.Size = UDim2.new(0, 130, 0, 16)
+TitleLabel_Anomaly.Position = UDim2.new(0, 8, 0, 6)
+TitleLabel_Anomaly.BackgroundTransparency = 1
+TitleLabel_Anomaly.Text = "Anomaly Hub Auto Steal"
+TitleLabel_Anomaly.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel_Anomaly.TextSize = 10
+TitleLabel_Anomaly.Font = Enum.Font.GothamBold
+TitleLabel_Anomaly.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel_Anomaly.ZIndex = 2
+TitleLabel_Anomaly.Parent = MainFrame_Anomaly
+
+local StealLabel_Anomaly = Instance.new("TextLabel")
+StealLabel_Anomaly.Name = generateObfuscatedName()
+StealLabel_Anomaly.Size = UDim2.new(0, 95, 0, 16)
+StealLabel_Anomaly.Position = UDim2.new(1, -103, 0, 6)
+StealLabel_Anomaly.BackgroundTransparency = 1
+StealLabel_Anomaly.Text = "Stealing: None"
+StealLabel_Anomaly.TextColor3 = Color3.fromRGB(180, 180, 180)
+StealLabel_Anomaly.TextSize = 8
+StealLabel_Anomaly.Font = Enum.Font.GothamMedium
+StealLabel_Anomaly.TextXAlignment = Enum.TextXAlignment.Right
+StealLabel_Anomaly.ZIndex = 2
+StealLabel_Anomaly.Parent = MainFrame_Anomaly
+
+local BarBackground_Anomaly = Instance.new("Frame")
+BarBackground_Anomaly.Name = generateObfuscatedName()
+BarBackground_Anomaly.Size = UDim2.new(1, -16, 0, 12)
+BarBackground_Anomaly.Position = UDim2.new(0, 8, 1, -20)
+BarBackground_Anomaly.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+BarBackground_Anomaly.BorderSizePixel = 0
+BarBackground_Anomaly.ZIndex = 2
+BarBackground_Anomaly.Parent = MainFrame_Anomaly
+
+local BarCorner_Anomaly = Instance.new("UICorner")
+BarCorner_Anomaly.CornerRadius = UDim.new(0, 4)
+BarCorner_Anomaly.Parent = BarBackground_Anomaly
+
+local BarFill_Anomaly = Instance.new("Frame")
+BarFill_Anomaly.Name = generateObfuscatedName()
+BarFill_Anomaly.Size = UDim2.new(0, 0, 1, 0)
+BarFill_Anomaly.BackgroundColor3 = Color3.fromRGB(160, 32, 240)
+BarFill_Anomaly.BorderSizePixel = 0
+BarFill_Anomaly.ZIndex = 3
+BarFill_Anomaly.Parent = BarBackground_Anomaly
+
+local FillCorner_Anomaly = Instance.new("UICorner")
+FillCorner_Anomaly.CornerRadius = UDim.new(0, 4)
+FillCorner_Anomaly.Parent = BarFill_Anomaly
+
+local StatusLabel_Anomaly = Instance.new("TextLabel")
+StatusLabel_Anomaly.Name = generateObfuscatedName()
+StatusLabel_Anomaly.Size = UDim2.new(0, 60, 0, 12)
+StatusLabel_Anomaly.Position = UDim2.new(0, 8, 1, -33)
+StatusLabel_Anomaly.BackgroundTransparency = 1
+StatusLabel_Anomaly.Text = "Unready"
+StatusLabel_Anomaly.TextColor3 = Color3.fromRGB(220, 220, 220)
+StatusLabel_Anomaly.TextSize = 8
+StatusLabel_Anomaly.Font = Enum.Font.GothamBold
+StatusLabel_Anomaly.TextXAlignment = Enum.TextXAlignment.Left
+StatusLabel_Anomaly.ZIndex = 2
+StatusLabel_Anomaly.Parent = MainFrame_Anomaly
+
+local VersionLabel_Anomaly = Instance.new("TextLabel")
+VersionLabel_Anomaly.Name = generateObfuscatedName()
+VersionLabel_Anomaly.Size = UDim2.new(0, 80, 0, 12)
+VersionLabel_Anomaly.Position = UDim2.new(1, -88, 1, -33)
+VersionLabel_Anomaly.BackgroundTransparency = 1
+VersionLabel_Anomaly.Text = "Mode: Normal"
+VersionLabel_Anomaly.TextColor3 = Color3.fromRGB(150, 150, 150)
+VersionLabel_Anomaly.TextSize = 8
+VersionLabel_Anomaly.Font = Enum.Font.GothamBold
+VersionLabel_Anomaly.TextXAlignment = Enum.TextXAlignment.Right
+VersionLabel_Anomaly.ZIndex = 2
+VersionLabel_Anomaly.Parent = MainFrame_Anomaly
+
+local drag_anomaly_dragging = false
+local drag_anomaly_dragInput, drag_anomaly_dragStart, drag_anomaly_startPos
+
+MainFrame_Anomaly.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        drag_anomaly_dragging = true
+        drag_anomaly_dragStart = input.Position
+        drag_anomaly_startPos = MainFrame_Anomaly.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                drag_anomaly_dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame_Anomaly.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        drag_anomaly_dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == drag_anomaly_dragInput and drag_anomaly_dragging then
+        local delta = input.Position - drag_anomaly_dragStart
+        MainFrame_Anomaly.Position = UDim2.new(
+            drag_anomaly_startPos.X.Scale, 
+            drag_anomaly_startPos.X.Offset + delta.X, 
+            drag_anomaly_startPos.Y.Scale, 
+            drag_anomaly_startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+local activePrompt_Anomaly = nil
+local fillTween_Anomaly = nil
+
+local function isStealPrompt(prompt)
+    local actionText = prompt.ActionText:lower()
+    local objectText = prompt.ObjectText:lower()
+    return string.find(actionText, "steal") or string.find(objectText, "steal")
+end
+
+local function updateStatusText_Anomaly(progressRatio)
+    if progressRatio >= 0.65 then
+        StatusLabel_Anomaly.Text = "Ready"
+        StatusLabel_Anomaly.TextColor3 = Color3.fromRGB(0, 255, 127)
+    else
+        StatusLabel_Anomaly.Text = "Unready"
+        StatusLabel_Anomaly.TextColor3 = Color3.fromRGB(220, 220, 220)
+    end
+end
+
+BarFill_Anomaly:GetPropertyChangedSignal("Size"):Connect(function()
+    updateStatusText_Anomaly(BarFill_Anomaly.Size.X.Scale)
+end)
+
+ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
+    if not isStealPrompt(prompt) then return end
+    activePrompt_Anomaly = prompt
+    StealLabel_Anomaly.Text = "Stealing: " .. (prompt.ObjectText ~= "" and prompt.ObjectText or prompt.ActionText)
+    local holdDuration = prompt.HoldDuration <= 0 and 0.1 or prompt.HoldDuration
+
+    BarFill_Anomaly.Size = UDim2.new(0, 0, 1, 0)
+    updateStatusText_Anomaly(0)
+
+    fillTween_Anomaly = TweenService:Create(BarFill_Anomaly, TweenInfo.new(holdDuration, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+    fillTween_Anomaly:Play()
+end)
+
+ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt)
+    if activePrompt_Anomaly == prompt then
+        if fillTween_Anomaly then fillTween_Anomaly:Cancel() end
+        BarFill_Anomaly.Size = UDim2.new(0, 0, 1, 0)
+        StealLabel_Anomaly.Text = "Stealing: None"
+        updateStatusText_Anomaly(0)
+        activePrompt_Anomaly = nil
+    end
+end)
+
+ProximityPromptService.PromptTriggered:Connect(function(prompt)
+    if activePrompt_Anomaly == prompt then
+        BarFill_Anomaly.Size = UDim2.new(0, 0, 1, 0)
+        StealLabel_Anomaly.Text = "Stealing: None"
+        updateStatusText_Anomaly(0)
+        activePrompt_Anomaly = nil
+    end
+end)
+
+local function finishIntro()
+    if isIntroEnded then return end
+    isIntroEnded = true
+
+    if IntroSound then
+        IntroSound:Stop()
+        IntroSound:Destroy()
+    end
+
+    TweenService:Create(IntroFrame, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(SkipButton, TweenInfo.new(0.3), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+
+    for _, item in ipairs(topLetterLabels) do
+        TweenService:Create(item.label, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TweenService:Create(item.stroke, TweenInfo.new(0.4), {Transparency = 1}):Play()
+    end
+    for _, item in ipairs(bottomLetterLabels) do
+        TweenService:Create(item.label, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TweenService:Create(item.stroke, TweenInfo.new(0.4), {Transparency = 1}):Play()
+    end
+
+    task.wait(0.6)
+    IntroFrame:Destroy()
+
+    OuterFrame_View.Visible = true
+    MainFrame_Anomaly.Visible = true
+    resetInactivity_View()
+end
+
+SkipButton.MouseButton1Click:Connect(finishIntro)
+
+task.spawn(function()
+    task.wait(0.2)
+    for i, item in ipairs(topLetterLabels) do
+        TweenService:Create(item.label, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+        TweenService:Create(item.stroke, TweenInfo.new(0.35), {Transparency = 0}):Play()
+        task.wait(0.05)
+    end
+    for i, item in ipairs(bottomLetterLabels) do
+        TweenService:Create(item.label, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+        TweenService:Create(item.stroke, TweenInfo.new(0.35), {Transparency = 0}):Play()
+        task.wait(0.06)
+    end
+end)
+
+task.spawn(function()
+    local startTime = tick()
+    local lastShock = 0
+    
+    while tick() - startTime < 15 and not isIntroEnded do
+        local elapsed = tick() - startTime
+        
+        local loudness = IntroSound.PlaybackLoudness or 0
+        local normalizedLoudness = math.clamp(loudness / 400, 0, 1.5)
+        
+        OuterRing.Rotation = (OuterRing.Rotation - (2 + normalizedLoudness * 4)) % 360
+        InnerRing.Rotation = (InnerRing.Rotation + (3 + normalizedLoudness * 5)) % 360
+        
+        local ringSizeOffset = normalizedLoudness * 40
+        OuterRing.Size = UDim2.new(0, 360 + ringSizeOffset, 0, 360 + ringSizeOffset)
+        OuterRing.Position = UDim2.new(0.5, -(180 + ringSizeOffset / 2), 0.5, -(180 + ringSizeOffset / 2))
+        
+        VignetteStroke.Transparency = math.clamp(0.4 - (normalizedLoudness * 0.25), 0.05, 0.5)
+        
+        for _, cardData in ipairs(bgCards) do
+            cardData.frame.Rotation = cardData.baseRot + math.sin(elapsed * 3) * (5 + normalizedLoudness * 5)
+            local scaleBonus = normalizedLoudness * 12
+            cardData.frame.Size = UDim2.new(0, cardData.baseSize.X.Offset + scaleBonus, 0, cardData.baseSize.Y.Offset + scaleBonus)
+            cardData.stroke.Transparency = math.clamp(0.4 - (normalizedLoudness * 0.3), 0.1, 0.6)
+        end
+
+        if loudness > 280 and (tick() - lastShock) > 0.45 then
+            lastShock = tick()
+            triggerShockwave()
+        end
+
+        task.wait(0.02)
+    end
+
+    finishIntro()
+end)
